@@ -6,7 +6,7 @@ const fs   = require('fs');
 const { generatePdf, formatDuration } = require('./pdfGenerator');
 const { DESCRIPTIONS, SECTION_HEADINGS } = require('./descriptions');
 
-const OUTPUT_DIR = path.join(__dirname, '..', "Alan's_to_do_list_PlaywrightTest");
+const OUTPUT_DIR = path.join(__dirname, '..', 'Alans_to_do_list_PlaywrightTest');
 
 /**
  * Custom Playwright reporter that generates a PDF report after every test run.
@@ -84,7 +84,7 @@ class PlaywrightPdfReporter {
 
       const now      = new Date();
       const ts       = now.toISOString().replace('T', '_').replace(/:/g, '-').slice(0, 19);
-      const fileName = `Alan's_to_do_list_PlaywrightTest_${ts}.pdf`;
+      const fileName = `Alans_to_do_list_PlaywrightTest_${ts}.pdf`;
       const outputPath = path.join(OUTPUT_DIR, fileName);
       const timestamp  = now.toISOString().replace('T', ' ').slice(0, 19);
 

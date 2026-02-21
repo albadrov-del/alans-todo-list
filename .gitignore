@@ -6,8 +6,8 @@ node_modules/
 .env.local
 
 # Generated PDF test reports (recreated on every test run)
-Alan's_to_do_list_JestTest/
-Alan's_to_do_list_PlaywrightTest/
+Alans_to_do_list_JestTest/
+Alans_to_do_list_PlaywrightTest/
 
 # Generated tutorial PDFs
 Tutorials/
