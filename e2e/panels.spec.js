@@ -95,6 +95,8 @@ test.describe('Cancel', () => {
 // ─────────────────────────────────────────────────────────────
 test.describe('Delete panel', () => {
   test('delete button removes the panel from the page', async ({ page }) => {
+    // Wait for the auto-created first panel before adding a second
+    await expect(page.locator('.accordion-item')).toHaveCount(1);
     await page.click('#btn-add-new');
     await expect(page.locator('.accordion-item')).toHaveCount(2);
 
