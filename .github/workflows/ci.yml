@@ -60,7 +60,7 @@ jobs:
         if: always()
         with:
           name: jest-test-report
-          path: "Alan's_to_do_list_JestTest/"
+          path: Alans_to_do_list_JestTest/
           retention-days: 30
 
       - name: Run browser tests (Playwright)
@@ -71,5 +71,5 @@ jobs:
         if: always()
         with:
           name: playwright-test-report
-          path: "Alan's_to_do_list_PlaywrightTest/"
+          path: Alans_to_do_list_PlaywrightTest/
           retention-days: 30
