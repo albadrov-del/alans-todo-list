@@ -48,7 +48,9 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Set up database tables
-        run: psql ${{ secrets.TEST_DATABASE_URL }} -f setup.sql
+        run: psql -h localhost -U postgres -d alans_todo_test -f setup.sql
+        env:
+          PGPASSWORD: postgres
 
       - name: Run API tests (Jest)
         run: npm test
