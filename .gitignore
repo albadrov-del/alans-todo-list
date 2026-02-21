@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Environment — never commit real credentials
+.env
+.env.local
+
+# Generated PDF test reports (recreated on every test run)
+Alan's_to_do_list_JestTest/
+Alan's_to_do_list_PlaywrightTest/
+
+# Generated tutorial PDFs
+Tutorials/
+
+# Playwright output
+playwright-report/
+test-results/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Claude Code internal files
+.claude/
