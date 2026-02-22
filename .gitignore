@@ -22,3 +22,6 @@ Desktop.ini
 
 # Claude Code internal files
 .claude/
+
+# Temporary wiki push directory
+wiki-temp/
