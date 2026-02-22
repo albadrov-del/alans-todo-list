@@ -92,8 +92,17 @@
       committed[panel.id] = panel.content;
     });
 
-    // Single delegated listener
+    // Single delegated click listener
     accordion.addEventListener('click', onAccordionClick);
+
+    // Keyboard shortcuts inside title input (Enter = save, Escape = cancel)
+    accordion.addEventListener('keydown', function (e) {
+      const input = e.target.closest('.title-input');
+      if (!input) return;
+      const id = Number(input.closest('.title-edit-form').dataset.panel);
+      if (e.key === 'Enter')       { e.preventDefault(); handleTitleSave(id); }
+      else if (e.key === 'Escape') { e.preventDefault(); exitEditMode(id); }
+    });
 
     document.getElementById('btn-add-new').addEventListener('click', addNewPanel);
     document.getElementById('btn-sign-out').addEventListener('click', handleSignOut);
@@ -101,12 +110,24 @@
 
   // ── Accordion click dispatcher ────────────────────────────
   async function onAccordionClick(e) {
-    const saveBtn   = e.target.closest('.btn-save');
-    const cancelBtn = e.target.closest('.btn-cancel');
-    const deleteBtn = e.target.closest('.btn-delete');
-    const trigger   = e.target.closest('.accordion-trigger');
+    const editTitleBtn   = e.target.closest('.btn-edit-title');
+    const titleSaveBtn   = e.target.closest('.btn-title-save');
+    const titleCancelBtn = e.target.closest('.btn-title-cancel');
+    const saveBtn        = e.target.closest('.btn-save');
+    const cancelBtn      = e.target.closest('.btn-cancel');
+    const deleteBtn      = e.target.closest('.btn-delete');
+    const trigger        = e.target.closest('.accordion-trigger');
 
-    if (saveBtn) {
+    if (editTitleBtn) {
+      e.stopPropagation();
+      enterEditMode(Number(editTitleBtn.dataset.panel));
+    } else if (titleSaveBtn) {
+      e.stopPropagation();
+      await handleTitleSave(Number(titleSaveBtn.dataset.panel));
+    } else if (titleCancelBtn) {
+      e.stopPropagation();
+      exitEditMode(Number(titleCancelBtn.dataset.panel));
+    } else if (saveBtn) {
       e.stopPropagation();
       await handleSave(Number(saveBtn.dataset.panel), saveBtn);
     } else if (cancelBtn) {
@@ -178,6 +199,70 @@
     }
   }
 
+  // ── Enter title edit mode ─────────────────────────────────
+  function enterEditMode(id) {
+    const item    = document.querySelector('.accordion-item[data-panel="' + id + '"]');
+    const header  = item.querySelector('.accordion-header');
+    const trigger = header.querySelector('.accordion-trigger');
+    const editBtn = header.querySelector('.btn-edit-title');
+    const form    = header.querySelector('.title-edit-form');
+    const input   = form.querySelector('.title-input');
+
+    // Pre-fill with current saved title
+    input.value = item.querySelector('.panel-name').textContent;
+
+    trigger.hidden = true;
+    editBtn.hidden = true;
+    form.hidden    = false;
+
+    input.focus();
+    input.select();
+  }
+
+  // ── Exit title edit mode ───────────────────────────────────
+  function exitEditMode(id) {
+    const item    = document.querySelector('.accordion-item[data-panel="' + id + '"]');
+    const header  = item.querySelector('.accordion-header');
+    const trigger = header.querySelector('.accordion-trigger');
+    const editBtn = header.querySelector('.btn-edit-title');
+    const form    = header.querySelector('.title-edit-form');
+    const error   = form.querySelector('.title-error');
+
+    error.hidden   = true;
+    form.hidden    = true;
+    trigger.hidden = false;
+    editBtn.hidden = false;
+  }
+
+  // ── Save title via PATCH ───────────────────────────────────
+  async function handleTitleSave(id) {
+    const item  = document.querySelector('.accordion-item[data-panel="' + id + '"]');
+    const form  = item.querySelector('.title-edit-form');
+    const input = form.querySelector('.title-input');
+    const error = form.querySelector('.title-error');
+
+    const newTitle = input.value.trim();
+
+    // Client-side validation
+    if (!newTitle) {
+      error.textContent = 'Title cannot be empty';
+      error.hidden = false;
+      input.focus();
+      return;
+    }
+
+    error.hidden = true;
+
+    try {
+      const result = await patchJSON('/api/panels/' + id + '/title', { title: newTitle });
+      item.querySelector('.panel-name').textContent = result.title;
+      exitEditMode(id);
+    } catch (err) {
+      error.textContent = err.message || 'Failed to save — please try again.';
+      error.hidden = false;
+    }
+  }
+
   // ── Add New Panel ─────────────────────────────────────────
   async function addNewPanel() {
     try {
@@ -243,18 +328,53 @@
     const badge = String((panel.panel_order || 0) + 1).padStart(2, '0');
     const open  = expanded ? 'true' : 'false';
 
-    return '<button class="accordion-trigger" id="trigger-' + id + '"' +
-      ' aria-expanded="' + open + '" aria-controls="panel-' + id + '">' +
-      '<div class="trigger-left">' +
-      '<span class="panel-badge">' + badge + '</span>' +
-      '<span class="panel-name">' + name + '</span>' +
-      '</div>' +
-      '<svg class="chevron" viewBox="0 0 24 24" fill="none"' +
-      ' stroke="currentColor" stroke-width="2.5"' +
-      ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-      '<polyline points="6 9 12 15 18 9"></polyline>' +
-      '</svg>' +
-      '</button>' +
+    const pencilSVG =
+      '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"' +
+      ' stroke="currentColor" stroke-width="2.5" stroke-linecap="round"' +
+      ' stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>' +
+      '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>' +
+      '</svg>';
+
+    return (
+      // ── Header row (trigger + edit button, swaps with edit form) ──
+      '<div class="accordion-header">' +
+
+        // Trigger — expand / collapse
+        '<button class="accordion-trigger" id="trigger-' + id + '"' +
+        ' aria-expanded="' + open + '" aria-controls="panel-' + id + '">' +
+        '<div class="trigger-left">' +
+        '<span class="panel-badge">' + badge + '</span>' +
+        '<span class="panel-name">' + name + '</span>' +
+        '</div>' +
+        '<svg class="chevron" viewBox="0 0 24 24" fill="none"' +
+        ' stroke="currentColor" stroke-width="2.5"' +
+        ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<polyline points="6 9 12 15 18 9"></polyline>' +
+        '</svg>' +
+        '</button>' +
+
+        // Edit title button (visible in default state)
+        '<button class="btn-edit-title" data-panel="' + id + '" type="button"' +
+        ' aria-label="Rename list" title="Rename list">' +
+        pencilSVG + ' Edit' +
+        '</button>' +
+
+        // Title edit form (hidden until Edit is clicked)
+        '<div class="title-edit-form" data-panel="' + id + '" hidden>' +
+        '<span class="panel-badge">' + badge + '</span>' +
+        '<input class="title-input" type="text" value="' + name + '"' +
+        ' aria-label="List title" maxlength="255" />' +
+        '<div class="title-edit-actions">' +
+        '<button class="btn-title-cancel" data-panel="' + id + '" type="button">Cancel</button>' +
+        '<button class="btn-title-save"   data-panel="' + id + '" type="button">Save</button>' +
+        '</div>' +
+        '<span class="title-error" hidden aria-live="polite">Title cannot be empty</span>' +
+        '</div>' +
+
+      '</div>' + // end .accordion-header
+
+      // ── Panel body ────────────────────────────────────────────
       '<div class="accordion-panel" id="panel-' + id + '"' +
       ' role="region" aria-labelledby="trigger-' + id + '">' +
       '<div class="panel-inner">' +
@@ -273,7 +393,8 @@
       '<button class="btn-save"   data-panel="' + id + '">Save</button>' +
       '</div>' +
       '</div>' +
-      '</div>';
+      '</div>'
+    );
   }
 
   // ── Utility ───────────────────────────────────────────────

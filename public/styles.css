@@ -5,6 +5,11 @@
   padding: 0;
 }
 
+/* Ensure the HTML hidden attribute always wins over any display overrides */
+[hidden] {
+  display: none !important;
+}
+
 /* ── Light theme (default) ───────────────────────────────── */
 :root {
   --color-bg:             #f0f2f5;
@@ -567,6 +572,160 @@ body {
   transition: color var(--transition);
 }
 
+/* ── Editable panel header ────────────────────────────────── */
+
+/* Flex wrapper: trigger grows, edit button + form sit beside it */
+.accordion-header {
+  display: flex;
+  align-items: center;
+}
+
+/* Let the trigger grow to fill remaining space without overflowing */
+.accordion-header .accordion-trigger {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+/* Pencil / rename button — hidden until hover for a clean look */
+.btn-edit-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  margin-right: 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--color-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition),
+              background var(--transition);
+  white-space: nowrap;
+}
+
+.btn-edit-title:hover {
+  color: var(--color-accent);
+  border-color: var(--color-border);
+  background: var(--color-trigger-hover);
+}
+
+.btn-edit-title:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Title edit form — shown in place of trigger + edit button */
+.title-edit-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+.title-edit-form .panel-badge {
+  flex-shrink: 0;
+}
+
+.title-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 7px;
+  background: var(--color-panel-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.975rem;
+  font-weight: 600;
+  transition: border-color var(--transition), background 0.25s ease,
+              color 0.25s ease, box-shadow var(--transition);
+}
+
+.title-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.15);
+}
+
+[data-theme="dark"] .title-input:focus {
+  box-shadow: 0 0 0 3px rgba(102, 144, 255, 0.18);
+}
+
+.title-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Title Save / Cancel — same visual language as .btn-save/.btn-cancel
+   but with tighter padding for the inline header context           */
+.btn-title-save,
+.btn-title-cancel {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition), transform 0.1s, box-shadow var(--transition);
+}
+
+.btn-title-save:active,
+.btn-title-cancel:active {
+  transform: scale(0.97);
+}
+
+.btn-title-save:focus-visible,
+.btn-title-cancel:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Save — filled accent */
+.btn-title-save {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(79, 124, 255, 0.25);
+}
+
+.btn-title-save:hover {
+  background: var(--color-accent-dark);
+  box-shadow: 0 3px 10px rgba(79, 124, 255, 0.35);
+}
+
+/* Cancel — ghost */
+.btn-title-cancel {
+  background: transparent;
+  color: var(--color-muted);
+  border: 1.5px solid var(--color-border);
+}
+
+.btn-title-cancel:hover {
+  border-color: var(--color-muted);
+  color: var(--color-text);
+  background: var(--color-cancel-hover);
+}
+
+/* Inline validation error message */
+.title-error {
+  width: 100%;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-danger);
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 600px) {
   .header {
@@ -597,5 +756,22 @@ body {
   .btn-cancel {
     padding: 7px 16px;
     font-size: 0.825rem;
+  }
+  /* Editable header — mobile */
+  .btn-edit-title {
+    margin-right: 8px;
+    padding: 4px 8px;
+  }
+  .title-edit-form {
+    padding: 10px 14px;
+    gap: 6px;
+  }
+  .title-input {
+    font-size: 0.9rem;
+  }
+  .btn-title-save,
+  .btn-title-cancel {
+    padding: 5px 12px;
+    font-size: 0.775rem;
   }
 }

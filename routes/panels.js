@@ -70,6 +70,36 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// ── PATCH /api/panels/:id/title ───────────────────────────────
+router.patch('/:id/title', async (req, res) => {
+  const { id }    = req.params;
+  const { title } = req.body;
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: 'Title cannot be empty' });
+  }
+
+  const trimmedTitle = title.trim();
+
+  try {
+    const result = await pool.query(
+      `UPDATE todo_panels
+       SET panel_name = $1, updated_at = NOW()
+       WHERE id = $2 AND user_id = $3
+       RETURNING id, panel_name`,
+      [trimmedTitle, id, req.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    return res.json({ id: result.rows[0].id, title: result.rows[0].panel_name });
+  } catch (err) {
+    console.error('Update panel title error:', err);
+    return res.status(500).json({ error: 'Failed to update title.' });
+  }
+});
+
 // ── DELETE /api/panels/:id ────────────────────────────────────
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;

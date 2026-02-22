@@ -162,3 +162,77 @@ describe('DELETE /api/panels/:id', () => {
     expect(panels.body).toHaveLength(1);
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// PATCH /api/panels/:id/title
+// ─────────────────────────────────────────────────────────────
+describe('PATCH /api/panels/:id/title', () => {
+  let panelId;
+
+  beforeEach(async () => {
+    const res = await agentA.post('/api/panels').send({ panel_name: 'Original Title' });
+    panelId = res.body.id;
+  });
+
+  it('returns 401 when not authenticated', async () => {
+    const res = await request(app)
+      .patch(`/api/panels/${panelId}/title`)
+      .send({ title: 'New Title' });
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 200 with updated id and title', async () => {
+    const res = await agentA
+      .patch(`/api/panels/${panelId}/title`)
+      .send({ title: 'Updated Title' });
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(panelId);
+    expect(res.body.title).toBe('Updated Title');
+  });
+
+  it('persists the new title — visible in GET /api/panels', async () => {
+    await agentA.patch(`/api/panels/${panelId}/title`).send({ title: 'Persisted' });
+    const panels = await agentA.get('/api/panels');
+    expect(panels.body[0].panel_name).toBe('Persisted');
+  });
+
+  it('trims leading and trailing whitespace from the title', async () => {
+    const res = await agentA
+      .patch(`/api/panels/${panelId}/title`)
+      .send({ title: '  Trimmed  ' });
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('Trimmed');
+  });
+
+  it('returns 400 when title is an empty string', async () => {
+    const res = await agentA
+      .patch(`/api/panels/${panelId}/title`)
+      .send({ title: '' });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when title is whitespace only', async () => {
+    const res = await agentA
+      .patch(`/api/panels/${panelId}/title`)
+      .send({ title: '   ' });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when title field is missing', async () => {
+    const res = await agentA
+      .patch(`/api/panels/${panelId}/title`)
+      .send({});
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 403 when user B tries to rename user A's panel", async () => {
+    const res = await agentB
+      .patch(`/api/panels/${panelId}/title`)
+      .send({ title: 'Hijacked' });
+    expect(res.status).toBe(403);
+
+    // Original title must be unchanged
+    const panels = await agentA.get('/api/panels');
+    expect(panels.body[0].panel_name).toBe('Original Title');
+  });
+});

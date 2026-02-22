@@ -123,3 +123,109 @@ test.describe('Accordion toggle', () => {
     await expect(panel).toHaveClass(/expanded/);
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// Editable panel headers
+// ─────────────────────────────────────────────────────────────
+test.describe('Editable panel headers', () => {
+  test('edit button enters edit mode with pre-filled input', async ({ page }) => {
+    const panel = page.locator('.accordion-item').first();
+
+    // Trigger should be visible; edit form should be hidden
+    await expect(panel.locator('.accordion-trigger')).toBeVisible();
+    await expect(panel.locator('.title-edit-form')).toBeHidden();
+
+    await panel.locator('.btn-edit-title').click();
+
+    // Edit form now visible, trigger hidden
+    await expect(panel.locator('.title-edit-form')).toBeVisible();
+    await expect(panel.locator('.accordion-trigger')).toBeHidden();
+
+    // Input pre-filled with current panel name
+    const input = panel.locator('.title-input');
+    const originalName = await panel.locator('.panel-name').getAttribute('__data') ??
+      'To Do List'; // fallback — just check input is not empty
+    await expect(input).not.toHaveValue('');
+  });
+
+  test('save button updates the header and persists after reload', async ({ page }) => {
+    const panel = page.locator('.accordion-item').first();
+
+    await panel.locator('.btn-edit-title').click();
+    await panel.locator('.title-input').fill('My Renamed List');
+    await panel.locator('.btn-title-save').click();
+
+    // Edit mode exits; trigger shows new name
+    await expect(panel.locator('.accordion-trigger')).toBeVisible();
+    await expect(panel.locator('.panel-name')).toHaveText('My Renamed List');
+
+    // Persists across page reload
+    await page.reload();
+    await expect(page.locator('.accordion-item').first().locator('.panel-name'))
+      .toHaveText('My Renamed List');
+  });
+
+  test('pressing Enter saves the title', async ({ page }) => {
+    const panel = page.locator('.accordion-item').first();
+
+    await panel.locator('.btn-edit-title').click();
+    await panel.locator('.title-input').fill('Saved via Enter');
+    await page.keyboard.press('Enter');
+
+    await expect(panel.locator('.accordion-trigger')).toBeVisible();
+    await expect(panel.locator('.panel-name')).toHaveText('Saved via Enter');
+  });
+
+  test('cancel button restores original title without saving', async ({ page }) => {
+    const panel     = page.locator('.accordion-item').first();
+    const nameBefore = await panel.locator('.panel-name').innerText();
+
+    await panel.locator('.btn-edit-title').click();
+    await panel.locator('.title-input').fill('Discarded Change');
+    await panel.locator('.btn-title-cancel').click();
+
+    // Edit mode exits; name unchanged
+    await expect(panel.locator('.accordion-trigger')).toBeVisible();
+    await expect(panel.locator('.panel-name')).toHaveText(nameBefore);
+  });
+
+  test('pressing Escape cancels without saving', async ({ page }) => {
+    const panel     = page.locator('.accordion-item').first();
+    const nameBefore = await panel.locator('.panel-name').innerText();
+
+    await panel.locator('.btn-edit-title').click();
+    await panel.locator('.title-input').fill('Escaped Change');
+    await page.keyboard.press('Escape');
+
+    await expect(panel.locator('.accordion-trigger')).toBeVisible();
+    await expect(panel.locator('.panel-name')).toHaveText(nameBefore);
+  });
+
+  test('empty title shows inline error and does not save', async ({ page }) => {
+    const panel     = page.locator('.accordion-item').first();
+    const nameBefore = await panel.locator('.panel-name').innerText();
+
+    await panel.locator('.btn-edit-title').click();
+    await panel.locator('.title-input').fill('');
+    await panel.locator('.btn-title-save').click();
+
+    // Error message visible; still in edit mode
+    await expect(panel.locator('.title-error')).toBeVisible();
+    await expect(panel.locator('.title-edit-form')).toBeVisible();
+
+    // Cancel out and verify the original title is unchanged
+    await panel.locator('.btn-title-cancel').click();
+    await expect(panel.locator('.panel-name')).toHaveText(nameBefore);
+  });
+
+  test('accordion trigger still collapses/expands when not in edit mode', async ({ page }) => {
+    const panel   = page.locator('.accordion-item').first();
+    const trigger = panel.locator('.accordion-trigger');
+
+    await expect(panel).toHaveClass(/expanded/);
+    await trigger.click();
+    await expect(panel).not.toHaveClass(/expanded/);
+    await trigger.click();
+    await expect(panel).toHaveClass(/expanded/);
+  });
+});
