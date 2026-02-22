@@ -5,6 +5,7 @@
   padding: 0;
 }
 
+/* ── Light theme (default) ───────────────────────────────── */
 :root {
   --color-bg:             #f0f2f5;
   --color-header-1:       #1a1a2e;
@@ -21,10 +22,39 @@
   --color-muted:          #8892a4;
   --color-success:        #22c55e;
   --color-danger:         #ef4444;
+  --color-actions-bg:     #fafbff;
+  --color-cancel-hover:   #f4f5f8;
+  --color-delete-border:  #fecaca;
+  --color-delete-bg:      #fef2f2;
   --radius:               12px;
   --shadow-panel:         0 2px 12px rgba(0, 0, 0, 0.07);
   --shadow-header:        0 4px 24px rgba(26, 26, 46, 0.35);
   --transition:           0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Dark theme ──────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-bg:             #111827;
+  --color-header-1:       #0d1117;
+  --color-header-2:       #0d1117;
+  --color-accent:         #6690ff;
+  --color-accent-dark:    #5577ee;
+  --color-accent-2:       #9d7fff;
+  --color-panel-bg:       #1f2937;
+  --color-trigger-hover:  #263040;
+  --color-border:         #374151;
+  --color-badge-bg:       #1e2d4a;
+  --color-badge-txt:      #6690ff;
+  --color-text:           #f1f5f9;
+  --color-muted:          #94a3b8;
+  --color-success:        #22c55e;
+  --color-danger:         #f87171;
+  --color-actions-bg:     #1a2333;
+  --color-cancel-hover:   #263040;
+  --color-delete-border:  #7f1d1d;
+  --color-delete-bg:      #2d1515;
+  --shadow-panel:         0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-header:        0 4px 24px rgba(0, 0, 0, 0.6);
 }
 
 html {
@@ -37,6 +67,8 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   min-height: 100vh;
+  /* Smooth color transition when theme switches */
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 /* ── App shell ────────────────────────────────────────────── */
@@ -53,6 +85,7 @@ body {
   padding: 32px 24px 28px;
   position: relative;
   overflow: hidden;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .header::before {
@@ -91,7 +124,7 @@ body {
   background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
 }
 
-/* ── Header meta (user + sign out) ───────────────────────── */
+/* ── Header meta (user + controls) ──────────────────────── */
 .header-meta {
   display: flex;
   align-items: center;
@@ -131,6 +164,75 @@ body {
   color: #ffffff;
 }
 
+/* ── Dark mode toggle ────────────────────────────────────── */
+.dark-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toggle-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* Hidden native checkbox */
+.toggle-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Visual toggle track */
+.toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease;
+  flex-shrink: 0;
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+/* Checked state */
+.toggle-checkbox:checked + .toggle-track {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.toggle-checkbox:checked + .toggle-track::after {
+  transform: translateX(18px);
+  background: #ffffff;
+}
+
+/* Focus ring on the track when checkbox is focused */
+.toggle-checkbox:focus-visible + .toggle-track {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
 /* ── Main ─────────────────────────────────────────────────── */
 .main {
   flex: 1;
@@ -154,7 +256,7 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow-panel);
   overflow: hidden;
-  transition: box-shadow var(--transition);
+  transition: box-shadow var(--transition), background 0.25s ease, border-color 0.25s ease;
 }
 
 .accordion-item:focus-within,
@@ -175,7 +277,7 @@ body {
   cursor: pointer;
   text-align: left;
   color: var(--color-text);
-  transition: background var(--transition);
+  transition: background var(--transition), color 0.25s ease;
   user-select: none;
 }
 
@@ -209,6 +311,7 @@ body {
   letter-spacing: 0.08em;
   border-radius: 6px;
   flex-shrink: 0;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 .panel-name {
@@ -252,7 +355,8 @@ body {
   gap: 10px;
   padding: 12px 20px 16px;
   border-top: 1px solid var(--color-border);
-  background: #fafbff;
+  background: var(--color-actions-bg);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 /* Shared button base */
@@ -312,7 +416,7 @@ body {
 .btn-cancel:hover {
   border-color: var(--color-muted);
   color: var(--color-text);
-  background: #f4f5f8;
+  background: var(--color-cancel-hover);
 }
 
 /* Delete — danger ghost, left-aligned via margin-right: auto */
@@ -335,8 +439,8 @@ body {
 
 .btn-delete:hover {
   color: var(--color-danger);
-  border-color: #fecaca;
-  background: #fef2f2;
+  border-color: var(--color-delete-border);
+  background: var(--color-delete-bg);
 }
 
 .btn-delete:active {
@@ -353,9 +457,10 @@ body {
   border: none;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  background: #fafbff;
+  background: var(--color-actions-bg);
   padding: 8px 12px;
   flex-wrap: wrap;
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .ql-container.ql-snow {
@@ -369,6 +474,7 @@ body {
   padding: 16px 20px;
   color: var(--color-text);
   line-height: 1.65;
+  transition: color 0.25s ease;
 }
 
 .ql-editor p {
@@ -399,6 +505,19 @@ body {
 .ql-snow .ql-toolbar button:hover .ql-fill,
 .ql-snow .ql-toolbar button.ql-active .ql-fill {
   fill: var(--color-accent);
+}
+
+/* Quill toolbar icon tinting in dark mode */
+[data-theme="dark"] .ql-snow .ql-stroke {
+  stroke: var(--color-muted);
+}
+
+[data-theme="dark"] .ql-snow .ql-fill {
+  fill: var(--color-muted);
+}
+
+[data-theme="dark"] .ql-snow .ql-picker-label {
+  color: var(--color-muted);
 }
 
 /* ── Add New button ───────────────────────────────────────── */
@@ -457,6 +576,9 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+  .header-meta {
+    flex-wrap: wrap;
   }
   .main {
     padding: 24px 12px 48px;

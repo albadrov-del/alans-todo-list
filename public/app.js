@@ -1,9 +1,9 @@
 /**
- * Alan's To Do List — app.js (v3 — server-backed)
+ * Alan's To Do List — app.js (v4 — dark mode)
  *
  * Auth:   checks /api/auth/me on load; redirects to /login if not signed in
  * Panels: loaded from /api/panels (PostgreSQL); saved via PUT /api/panels/:id
- * Add:    POST /api/panels; Delete: DELETE /api/panels/:id
+ * Theme:  preference loaded from /api/users/preferences; persisted on toggle
  */
 
 (function () {
@@ -22,6 +22,19 @@
   const quills    = {};  // { [panelId]: Quill instance }
   const committed = {};  // { [panelId]: Delta | null }  last saved server state
 
+  // ── Theme helpers ─────────────────────────────────────────
+  function applyTheme(dark) {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    const toggle = document.getElementById('toggle-dark-mode');
+    if (toggle) toggle.checked = dark;
+  }
+
+  async function saveThemePreference(dark) {
+    try {
+      await patchJSON('/api/users/preferences', { dark_mode: dark });
+    } catch (_) { /* non-critical — UI already updated */ }
+  }
+
   // ── Boot ──────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', async function () {
     // Auth guard — redirect to login if not signed in
@@ -33,9 +46,27 @@
       return;
     }
 
+    // Fetch preference and apply theme before rendering panels
+    try {
+      const prefs = await fetchJSON('/api/users/preferences');
+      applyTheme(prefs.dark_mode);
+    } catch (_) {
+      // Default to light mode on error
+      applyTheme(false);
+    }
+
     // Show username in header
     const userDisplay = document.getElementById('user-display');
     if (userDisplay) userDisplay.textContent = me.username;
+
+    // Wire dark mode toggle
+    const toggle = document.getElementById('toggle-dark-mode');
+    if (toggle) {
+      toggle.addEventListener('change', async function () {
+        applyTheme(toggle.checked);
+        await saveThemePreference(toggle.checked);
+      });
+    }
 
     // Load panels from server
     const accordion = document.getElementById('accordion');
@@ -170,6 +201,8 @@
   // ── Sign out ──────────────────────────────────────────────
   async function handleSignOut() {
     try { await postJSON('/api/auth/logout', {}); } catch (_) { /* ignore */ }
+    // Reset theme to light on sign-out
+    applyTheme(false);
     window.location.href = '/login';
   }
 
@@ -281,6 +314,21 @@
   async function putJSON(url, data) {
     const res = await fetch(url, {
       method:      'PUT',
+      headers:     { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body:        JSON.stringify(data),
+    });
+    if (res.status === 401) { window.location.href = '/login'; throw new Error('Unauthorized'); }
+    if (!res.ok) {
+      const err = await res.json().catch(function () { return {}; });
+      throw new Error(err.error || res.status);
+    }
+    return res.json();
+  }
+
+  async function patchJSON(url, data) {
+    const res = await fetch(url, {
+      method:      'PATCH',
       headers:     { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body:        JSON.stringify(data),

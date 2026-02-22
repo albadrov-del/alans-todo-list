@@ -18,3 +18,11 @@ CREATE TABLE IF NOT EXISTS todo_panels (
   created_at  TIMESTAMP DEFAULT NOW(),
   updated_at  TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS user_preferences (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  dark_mode  BOOLEAN   DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);

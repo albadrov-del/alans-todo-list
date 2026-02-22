@@ -30,9 +30,14 @@ router.post('/register', async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)',
+    const userResult = await pool.query(
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
       [username.trim(), email.trim().toLowerCase(), passwordHash]
+    );
+    // Auto-create preferences row with defaults (dark_mode = false)
+    await pool.query(
+      'INSERT INTO user_preferences (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING',
+      [userResult.rows[0].id]
     );
     return res.status(201).json({ message: 'Account created successfully.' });
   } catch (err) {
