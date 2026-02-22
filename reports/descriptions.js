@@ -247,6 +247,55 @@ const DESCRIPTIONS = {
   'Registration creates default preferences > GET preferences succeeds immediately after registration (row exists)':
     'As soon as a user registers, their preferences record is created automatically — no extra step is needed.',
 
+  // ── Jest: PATCH /api/panels/:id/title ─────────────────────────────────────
+
+  'PATCH /api/panels/:id/title > returns 401 when not authenticated':
+    'A visitor who is not signed in cannot rename a to-do list.',
+
+  'PATCH /api/panels/:id/title > returns 200 with updated id and title':
+    'Renaming a to-do list with a valid title works correctly — the updated title is returned along with the list ID.',
+
+  'PATCH /api/panels/:id/title > persists the new title — visible in GET /api/panels':
+    'After a title is changed, the new name is immediately reflected when the list of panels is fetched — the change is saved.',
+
+  'PATCH /api/panels/:id/title > trims leading and trailing whitespace from the title':
+    'Extra spaces at the start or end of a new title are automatically removed before saving — "  My List  " is saved as "My List".',
+
+  'PATCH /api/panels/:id/title > returns 400 when title is an empty string':
+    'The system correctly refuses to save an empty string as a panel title.',
+
+  'PATCH /api/panels/:id/title > returns 400 when title is whitespace only':
+    'The system correctly refuses to accept a title that contains only spaces — a meaningful title is required.',
+
+  'PATCH /api/panels/:id/title > returns 400 when title field is missing':
+    'The system correctly refuses a rename request that does not include the title field.',
+
+  "PATCH /api/panels/:id/title > returns 403 when user B tries to rename user A's panel":
+    "One user cannot rename another user's to-do list — the request is rejected and the original title is preserved.",
+
+  // ── Playwright: Editable panel headers ────────────────────────────────────
+
+  'Editable panel headers > edit button enters edit mode with pre-filled input':
+    'Clicking the Edit button on a panel header switches to edit mode, showing a text input that is pre-filled with the current title.',
+
+  'Editable panel headers > save button updates the header and persists after reload':
+    'Typing a new title and clicking Save immediately updates the header and keeps the change after the page is refreshed.',
+
+  'Editable panel headers > pressing Enter saves the title':
+    'Pressing the Enter key while typing a new title saves the change — no need to reach for the Save button.',
+
+  'Editable panel headers > cancel button restores original title without saving':
+    'Clicking Cancel while in edit mode discards any changes and restores the original title.',
+
+  'Editable panel headers > pressing Escape cancels without saving':
+    'Pressing the Escape key while editing a title cancels the change and restores the original title.',
+
+  'Editable panel headers > empty title shows inline error and does not save':
+    'Trying to save an empty title shows a clear inline error message — the original title is kept and the list is not changed.',
+
+  'Editable panel headers > accordion trigger still collapses/expands when not in edit mode':
+    'The usual collapse and expand behaviour of the to-do list header continues to work correctly when the panel is not in edit mode.',
+
   // ── Playwright: Dark mode toggle ───────────────────────────────────────────
 
   'Dark mode toggle > toggle is visible in the header when signed in':
@@ -296,10 +345,11 @@ const SECTION_HEADINGS = {
   'GET /api/auth/me':        'Checking Who Is Logged In',
 
   // Jest — panels.test.js
-  'GET /api/panels':        'Loading To-Do Lists',
-  'POST /api/panels':       'Creating a New To-Do List',
-  'PUT /api/panels/:id':    'Saving Changes to a To-Do List',
-  'DELETE /api/panels/:id': 'Deleting a To-Do List',
+  'GET /api/panels':                'Loading To-Do Lists',
+  'POST /api/panels':               'Creating a New To-Do List',
+  'PUT /api/panels/:id':            'Saving Changes to a To-Do List',
+  'DELETE /api/panels/:id':         'Deleting a To-Do List',
+  'PATCH /api/panels/:id/title':    'Renaming a To-Do List',
 
   // Playwright — auth.spec.js
   'Registration': 'Account Registration',
@@ -307,12 +357,13 @@ const SECTION_HEADINGS = {
   'Sign out':     'Signing Out',
 
   // Playwright — panels.spec.js
-  'Panel loading':    'Loading the To-Do App',
-  'Add new panel':    'Adding a New List',
-  'Save panel':       'Saving a List',
-  'Cancel':           'Cancelling Without Saving',
-  'Delete panel':     'Deleting a List',
-  'Accordion toggle': 'Expanding and Collapsing Lists',
+  'Panel loading':          'Loading the To-Do App',
+  'Add new panel':          'Adding a New List',
+  'Save panel':             'Saving a List',
+  'Cancel':                 'Cancelling Without Saving',
+  'Delete panel':           'Deleting a List',
+  'Accordion toggle':       'Expanding and Collapsing Lists',
+  'Editable panel headers': 'Renaming Lists Inline',
 
   // Jest — preferences.test.js
   'GET /api/users/preferences':              'Loading Theme Preference',
