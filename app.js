@@ -6,8 +6,9 @@ const express      = require('express');
 const cookieParser = require('cookie-parser');
 const path         = require('path');
 
-const authRoutes  = require('./routes/auth');
-const panelRoutes = require('./routes/panels');
+const authRoutes        = require('./routes/auth');
+const panelRoutes       = require('./routes/panels');
+const preferencesRoutes = require('./routes/preferences');
 
 const app = express();
 
@@ -19,8 +20,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── API routes ────────────────────────────────────────────────
-app.use('/api/auth',   authRoutes);
-app.use('/api/panels', panelRoutes);
+app.use('/api/auth',             authRoutes);
+app.use('/api/panels',           panelRoutes);
+app.use('/api/users/preferences', preferencesRoutes);
 
 // ── Page routes ───────────────────────────────────────────────
 app.get('/login',    (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));

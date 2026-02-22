@@ -207,6 +207,81 @@ const DESCRIPTIONS = {
 
   'Accordion toggle > clicking the trigger collapses and re-expands a panel':
     'Clicking the to-do list header collapses it (hides the content), and clicking it again expands it back — the toggle works correctly in both directions.',
+
+  // ── Jest: GET /api/users/preferences ──────────────────────────────────────
+
+  'GET /api/users/preferences > returns 401 when not authenticated':
+    'A visitor who is not signed in cannot access any user preferences.',
+
+  'GET /api/users/preferences > returns dark_mode: false by default for a new user':
+    'A newly registered user starts in light mode — dark mode is off by default.',
+
+  'GET /api/users/preferences > returns the saved preference after it has been updated':
+    'Once a user has changed their theme preference, the saved value is returned correctly on the next request.',
+
+  // ── Jest: PATCH /api/users/preferences ────────────────────────────────────
+
+  'PATCH /api/users/preferences > returns 401 when not authenticated':
+    'A visitor who is not signed in cannot update any user preferences.',
+
+  'PATCH /api/users/preferences > returns 400 when dark_mode is missing':
+    'The system correctly refuses to update preferences when the dark_mode field is not provided.',
+
+  'PATCH /api/users/preferences > returns 400 when dark_mode is not a boolean':
+    'The system correctly refuses to accept a non-boolean value for the dark_mode preference.',
+
+  'PATCH /api/users/preferences > sets dark_mode to true and returns the updated preference':
+    'Enabling dark mode works correctly — the preference is saved and returned.',
+
+  'PATCH /api/users/preferences > sets dark_mode to false and returns the updated preference':
+    'Disabling dark mode works correctly — the preference is saved and returned.',
+
+  'PATCH /api/users/preferences > is idempotent — patching twice with the same value is safe':
+    'Saving the same theme preference twice in a row causes no errors — the operation is safe to repeat.',
+
+  'PATCH /api/users/preferences > preferences are scoped to the user — two users have independent settings':
+    'Each user has their own independent theme preference — one user enabling dark mode does not affect another user.',
+
+  // ── Jest: Registration creates default preferences ─────────────────────────
+
+  'Registration creates default preferences > GET preferences succeeds immediately after registration (row exists)':
+    'As soon as a user registers, their preferences record is created automatically — no extra step is needed.',
+
+  // ── Playwright: Dark mode toggle ───────────────────────────────────────────
+
+  'Dark mode toggle > toggle is visible in the header when signed in':
+    'The dark mode toggle control is visible in the app header for all signed-in users.',
+
+  'Dark mode toggle > toggle is labelled "Dark mode"':
+    'The toggle is clearly labelled "Dark mode" so users know exactly what it controls.',
+
+  'Dark mode toggle > toggle has an aria-label for screen readers':
+    'The toggle includes an accessible label so screen reader users can identify and operate it.',
+
+  'Dark mode toggle > toggle is keyboard focusable':
+    'The dark mode toggle can be reached and activated using the keyboard — it is fully accessible without a mouse.',
+
+  // ── Playwright: Theme switching ────────────────────────────────────────────
+
+  'Theme switching > default theme is light (no data-theme="dark" on html)':
+    'The app starts in light mode by default for all new users.',
+
+  'Theme switching > clicking toggle switches html to data-theme="dark"':
+    'Clicking the dark mode toggle immediately switches the entire app to the dark theme.',
+
+  'Theme switching > clicking toggle again switches back to light mode':
+    'Clicking the toggle a second time switches the app back to light mode.',
+
+  'Theme switching > toggle checkbox reflects the current theme state':
+    'The toggle\'s visual checked state always matches the currently active theme.',
+
+  // ── Playwright: Preference persistence ────────────────────────────────────
+
+  'Preference persistence > dark mode preference persists after page reload':
+    'A user\'s dark mode setting is saved to the server and automatically restored when they refresh the page — no setting is lost.',
+
+  'Preference persistence > light mode is restored after sign out':
+    'When a user signs out and signs back in, their saved theme preference is re-applied — the app remembers their choice across sessions.',
 };
 
 /**
@@ -238,6 +313,16 @@ const SECTION_HEADINGS = {
   'Cancel':           'Cancelling Without Saving',
   'Delete panel':     'Deleting a List',
   'Accordion toggle': 'Expanding and Collapsing Lists',
+
+  // Jest — preferences.test.js
+  'GET /api/users/preferences':              'Loading Theme Preference',
+  'PATCH /api/users/preferences':            'Saving Theme Preference',
+  'Registration creates default preferences': 'Default Preferences on Registration',
+
+  // Playwright — darkmode.spec.js
+  'Dark mode toggle':       'Dark Mode Toggle Control',
+  'Theme switching':        'Switching Themes',
+  'Preference persistence': 'Theme Preference Persistence',
 };
 
 module.exports = { DESCRIPTIONS, SECTION_HEADINGS };
